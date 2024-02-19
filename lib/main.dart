@@ -78,13 +78,7 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            video != null
-                ? VideoPlayerWidget(videoPath: video!.path)
-                : Container(
-              width: 160,
-              height: 160,
-              color: Colors.grey,
-            ),
+
             // image != null
             //     ? Image.file(
             //       image!,
