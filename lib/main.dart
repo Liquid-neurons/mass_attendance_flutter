@@ -186,37 +186,75 @@ class _MyHomePageState extends State<MyHomePage> {
   //     print('Error uploading file: $e');
   //   }
   // }
-  Future uploadFile(File file, String endpoint) async {
-    String message;
+
+  //type null error
+  // Future uploadFile(File file, String endpoint) async {
+  //   String message;
+  //   try {
+  //     String fileType = file.path.split('.').last;
+  //     String fieldName = fileType == 'mp4' ? 'video' : 'image';
+  //
+  //     List<int> fileBytes = await file.readAsBytes();
+  //     String base64File = base64Encode(fileBytes);
+  //
+  //     Map<String, dynamic> requestBody = {
+  //       "fileType": fileType,
+  //       "fileData": base64File,
+  //     };
+  //
+  //     final response = await http.post(
+  //       Uri.parse(endpoint),
+  //       headers: {"Content-Type": "application/json"},
+  //       body: jsonEncode(requestBody),
+  //     );
+  //
+  //     if (response.statusCode == 200) {
+  //       final resJson = jsonDecode(response.body);
+  //       message = resJson['message'];
+  //       setState(() {});
+  //     } else {
+  //       print('Failed to upload file. Status code: ${response.statusCode}');
+  //     }
+  //   } catch (e) {
+  //     print('Error uploading file: $e');
+  //   }
+  // }
+
+
+
+  Future<void> uploadFile(File videoFile, String apiUrl) async {
     try {
-      String fileType = file.path.split('.').last;
-      String fieldName = fileType == 'mp4' ? 'video' : 'image';
+      List<int> videoBytes = await videoFile.readAsBytes();
+      String base64Video = base64Encode(videoBytes);
 
-      List<int> fileBytes = await file.readAsBytes();
-      String base64File = base64Encode(fileBytes);
-
-      Map<String, dynamic> requestBody = {
-        "fileType": fileType,
-        "fileData": base64File,
+      Map<String, String> headers = {
+        "Content-Type": "application/json",
       };
 
-      final response = await http.post(
-        Uri.parse(endpoint),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode(requestBody),
+      Map<String, String> body = {
+        "base64_video": base64Video,
+      };
+
+      var response = await http.post(
+        Uri.parse(apiUrl),
+        headers: headers,
+        body: jsonEncode(body),
       );
 
       if (response.statusCode == 200) {
-        final resJson = jsonDecode(response.body);
-        message = resJson['message'];
-        setState(() {});
+        print("Video uploaded successfully");
       } else {
-        print('Failed to upload file. Status code: ${response.statusCode}');
+        print("Failed to upload video. Status Code: ${response.statusCode}");
       }
     } catch (e) {
-      print('Error uploading file: $e');
+      print("Error uploading video: $e");
     }
   }
+
+
+
+
+
 
   Future pickVideo(ImageSource source) async {
     try {
