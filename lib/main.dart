@@ -32,44 +32,7 @@ class _MyHomePageState extends State<MyHomePage> {
   File? image;
   File? video;
 
-  // Future<void> uploadVideo(File videoFile) async {
-  //   try {
-  //     // Encode the video file to base64
-  //     List<int> videoBytes = await videoFile.readAsBytes();
-  //     String base64Video = base64Encode(videoBytes);
-  //
-  //     // Prepare the JSON object
-  //     Map<String, dynamic> jsonBody = {
-  //       'video': base64Video,
-  //       // Add other parameters if needed
-  //     };
-  //
-  //     // Convert the JSON object to a string
-  //     String jsonString = jsonEncode(jsonBody);
-  //     print('jsonString: ${jsonString}');
-  //
-  //     // Uncomment the following lines when your API is ready
-  //     var url = Uri.parse('http://10.0.2.2:5000/upload');  // Update the endpoint URL
-  //     final response = await http.post(
-  //       url,
-  //       body: jsonString,
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //     );
-  //
-  //     if (response.statusCode == 200) {
-  //       print('Video uploaded successfully');
-  //     } else {
-  //       print('Failed to upload video. Status code: ${response.statusCode}');
-  //       print('Error message: ${response.body}');
-  //     }
-  //
-  //   } catch (e) {
-  //     print('Error uploading video: $e');
-  //   }
-  //
-  // }
+
   // Future<void> uploadVideo(File videoFile) async {
   //   try {
   //     // Save the video file to a local directory
@@ -127,101 +90,6 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  // Future pickVideo(ImageSource source) async {
-  //   try {
-  //     final video = await ImagePicker().pickVideo(source: source);
-  //     if (video == null) return;
-  //
-  //     final videoTemporary = File(video.path);
-  //     setState(() => this.video = videoTemporary);
-  //     await GallerySaver.saveVideo(video.path);
-  //     print('Video Path: ${video.path}');
-  //   } on PlatformException catch (e) {
-  //     print('Failed to pick video: $e');
-  //   }
-  // }
-  // Future pickVideo(ImageSource source) async {
-  //   try {
-  //     final video = await ImagePicker().pickVideo(source: source);
-  //     if (video == null) return;
-  //
-  //     final videoTemporary = File(video.path);
-  //     setState(() => this.video = videoTemporary);
-  //
-  //     await uploadVideo(videoTemporary);
-  //
-  //     print('Video Path: ${video.path}');
-  //   } on PlatformException catch (e) {
-  //     print('Failed to pick video: $e');
-  //   }
-  // }
-  // Future uploadFile(File file, String endpoint) async {
-  //   final request = http.MultipartRequest("POST", Uri.parse(endpoint));
-  //   final headers = {"Content-type": "multipart/form-data"};
-  //   String message;
-  //   request.headers.addAll(headers);
-  //
-  //   String fileType = file.path.split('.').last;
-  //   String fieldName = fileType == 'mp4' ? 'video' : 'image';
-  //
-  //   request.files.add(
-  //     await http.MultipartFile.fromPath(
-  //       fieldName,
-  //       file.path,
-  //     ),
-  //   );
-  //
-  //   try {
-  //     final response = await request.send();
-  //     final res = await http.Response.fromStream(response);
-  //
-  //     if (response.statusCode == 200) {
-  //       final resJson = jsonDecode(res.body);
-  //       message = resJson['message'];
-  //       setState(() {});
-  //     } else {
-  //       print('Failed to upload file. Status code: ${response.statusCode}');
-  //     }
-  //   } catch (e) {
-  //     print('Error uploading file: $e');
-  //   }
-  // }
-
-  //type null error
-  // Future uploadFile(File file, String endpoint) async {
-  //   String message;
-  //   try {
-  //     String fileType = file.path.split('.').last;
-  //     String fieldName = fileType == 'mp4' ? 'video' : 'image';
-  //
-  //     List<int> fileBytes = await file.readAsBytes();
-  //     String base64File = base64Encode(fileBytes);
-  //
-  //     Map<String, dynamic> requestBody = {
-  //       "fileType": fileType,
-  //       "fileData": base64File,
-  //     };
-  //
-  //     final response = await http.post(
-  //       Uri.parse(endpoint),
-  //       headers: {"Content-Type": "application/json"},
-  //       body: jsonEncode(requestBody),
-  //     );
-  //
-  //     if (response.statusCode == 200) {
-  //       final resJson = jsonDecode(response.body);
-  //       message = resJson['message'];
-  //       setState(() {});
-  //     } else {
-  //       print('Failed to upload file. Status code: ${response.statusCode}');
-  //     }
-  //   } catch (e) {
-  //     print('Error uploading file: $e');
-  //   }
-  // }
-
-
-
   Future<void> uploadFile(File videoFile, String apiUrl) async {
     try {
       List<int> videoBytes = await videoFile.readAsBytes();
@@ -238,7 +106,7 @@ class _MyHomePageState extends State<MyHomePage> {
       var response = await http.post(
         Uri.parse(apiUrl),
         headers: headers,
-        body: jsonEncode(body),
+        body: jsonEncode(body), // Set a longer timeout duration (in seconds)
       );
 
       if (response.statusCode == 200) {
@@ -264,7 +132,7 @@ class _MyHomePageState extends State<MyHomePage> {
       final videoTemporary = File(video.path);
       setState(() => this.video = videoTemporary);
 
-      await uploadFile(videoTemporary, "http://10.0.2.2:5000/upload");
+      await uploadFile(videoTemporary, "http://49.206.252.212:5001/upload");
 
       print('Video Path: ${video.path}');
     } on PlatformException catch (e) {
