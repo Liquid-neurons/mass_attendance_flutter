@@ -6,6 +6,7 @@ import 'package:gallery_saver/files.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:http/http.dart' as http;
+import 'package:ai_collabaration2/app.dart';
 
 void main() {
   runApp(MyApp());
@@ -119,7 +120,21 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-
+  // Future<void> fetchAndDisplayUpdatedData() async {
+  //   print("In function");
+  //   // Fetch updated CSV data from your API
+  //   var updatedDataResponse = await http.get(Uri.parse("http://49.206.252.212:5001/return_csv"));
+  //
+  //   if (updatedDataResponse.statusCode == 200) {
+  //     // Parse the CSV data and update the UI
+  //     List<dynamic> updatedData = jsonDecode(updatedDataResponse.body);
+  //
+  //     // TODO: Update your UI with the fetched data
+  //     print("Updated Data: $updatedData");
+  //   } else {
+  //     print("Failed to fetch updated data. Status Code: ${updatedDataResponse.statusCode}");
+  //   }
+  // }
 
 
 
@@ -180,7 +195,22 @@ class _MyHomePageState extends State<MyHomePage> {
               title: 'Take Video',
               icon: Icons.camera_alt_outlined,
               onClicked: ()=>pickVideo(ImageSource.camera),
-            )
+            ),
+            const SizedBox(height:24),
+            ElevatedButton(
+              onPressed: () {
+                // Navigate to the next page
+                Navigator.push(
+                  context,
+
+                  MaterialPageRoute(
+                    builder: (context) => Entries(),
+                  ),
+                );
+              },
+              child: Text('Entries'),
+            ),
+
           ],
 
         ),
@@ -218,10 +248,6 @@ class VideoPlayerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // You can use a video player package like 'video_player' to display the captured video
-    // Add 'video_player' to your pubspec.yaml file and import it here
-    // Example usage: https://pub.dev/packages/video_player
-
     return Container(
       width: 160,
       height: 160,
