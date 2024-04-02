@@ -240,6 +240,7 @@
 // }
 //
 //
+import 'package:ai_collabaration2/new_user.dart';
 import 'package:ai_collabaration2/video.dart';
 import 'package:flutter/material.dart';
 
@@ -365,12 +366,14 @@ class MyHomePage extends StatelessWidget {
                       child: SizedBox(
                         width: double.infinity,
                         height: 50,
-                        child: Text('Mark Attendance',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
+                        child: Center( // Centering the text vertically
+                          child: Text(
+                            'Mark Attendance',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
                               color: Color(0xFFF9E8C9),
-                              fontSize: 25.0,
-                              fontWeight: FontWeight.bold
+                              fontSize: 20.0,
+                            ),
                           ),
                         ),
                       ),
@@ -378,28 +381,34 @@ class MyHomePage extends StatelessWidget {
                     SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
-                        // Button Pressed
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => NewUser()),
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         primary: Color(0xFF98ABEE),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20), // Adjust the value to change roundness
-                        ),// Changed button color
+                        ),
+                        // Changed button color
                       ),
                       child: SizedBox(
                         width: double.infinity,
                         height: 50,
-                        child:
-                        Text('New User',
+                        child: Center( // Centering the text vertically
+                          child: Text(
+                            'New User',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                                color: Color(0xFFF9E8C9),
-                                fontSize: 25.0,
-                                fontWeight: FontWeight.bold
+                              color: Color(0xFFF9E8C9),
+                              fontSize: 20.0,
                             ),
+                          ),
+                        ),
                       ),
                     ),
-                    ),
+
                   ],
                 ),
               ),

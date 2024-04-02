@@ -30,6 +30,7 @@ class VideoPage extends StatefulWidget {
 class _MyHomePageState extends State<VideoPage> {
   File? image;
   File? video;
+  List<dynamic> updatedData = [];
 
 
   // Future<void> uploadVideo(File videoFile) async {
@@ -118,21 +119,37 @@ class _MyHomePageState extends State<VideoPage> {
     }
   }
 
-  // Future<void> fetchAndDisplayUpdatedData() async {
-  //   print("In function");
-  //   // Fetch updated CSV data from your API
-  //   var updatedDataResponse = await http.get(Uri.parse("http://49.206.252.212:5001/return_csv"));
-  //
-  //   if (updatedDataResponse.statusCode == 200) {
-  //     // Parse the CSV data and update the UI
-  //     List<dynamic> updatedData = jsonDecode(updatedDataResponse.body);
-  //
-  //     // TODO: Update your UI with the fetched data
-  //     print("Updated Data: $updatedData");
-  //   } else {
-  //     print("Failed to fetch updated data. Status Code: ${updatedDataResponse.statusCode}");
-  //   }
-  // }
+  Future<void> fetchAndDisplayUpdatedData() async {
+    var updatedDataResponse = await http.get(Uri.parse("http://49.206.252.212:5001/return_csv"));
+
+    if (updatedDataResponse.statusCode == 200) {
+      setState(() {
+        updatedData = jsonDecode(updatedDataResponse.body);
+      });
+    } else {
+      print("Failed to fetch updated data. Status Code: ${updatedDataResponse.statusCode}");
+    }
+  }
+
+  Future<void> clearEntries() async {
+    var clearEntriesResponse = await http.post(
+      Uri.parse("http://49.206.252.212:5001/clear_csv"),
+    );
+
+    if (clearEntriesResponse.statusCode == 200) {
+      print("CSV file cleared successfully.");
+      // Refresh the UI to reflect the changes (optional)
+      fetchAndDisplayUpdatedData();
+    } else {
+      print("Failed to clear CSV file. Status Code: ${clearEntriesResponse.statusCode}");
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchAndDisplayUpdatedData();
+  }
 
 
 
@@ -155,46 +172,124 @@ class _MyHomePageState extends State<VideoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Home Page'),
-      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 80.0,left:30.0), // Added padding to move text down
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
 
 
-            const SizedBox(height:24),
-            buildButton(
-              title: 'Upload Video',
-              icon: Icons.image_outlined,
-              onClicked: ()=>pickVideo(ImageSource.gallery),
-            ),
-            const SizedBox(height:24),
-            buildButton(
-              title: 'Take Video',
-              icon: Icons.camera_alt_outlined,
-              onClicked: ()=>pickVideo(ImageSource.camera),
-            ),
-            const SizedBox(height:24),
-            ElevatedButton(
-              onPressed: () {
-                // Navigate to the next page
-                Navigator.push(
-                  context,
-
-                  MaterialPageRoute(
-                    builder: (context) => Entries(),
+                  Text(
+                    'Upload Video',
+                    style: TextStyle(
+                        color: Color(0xFF98ABEE), // Changed text color
+                        fontSize: 24.0,
+                        fontWeight: FontWeight.bold
+                    ),
                   ),
-                );
-              },
-              child: Text('Entries'),
+                  Text(
+                    'Provide a video of the class under visible lighting to mark the attendance.',
+                    style: TextStyle(
+                        color: Color(0xFFF9E8C9), // Changed text color
+                        fontSize: 18.0,
+                    ),
+                  ),
+                ],
+              ),
+
             ),
+
+            SizedBox(height: 16),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    buildButton(
+                      title: 'Upload Video',
+                      icon: Icons.image_outlined,
+                      onClicked: ()=>pickVideo(ImageSource.gallery),
+                    ),
+                    const SizedBox(height:24),
+                    buildButton(
+                      title: 'Take Video',
+                      icon: Icons.camera_alt_outlined,
+                      onClicked: ()=>pickVideo(ImageSource.camera),
+                    ),
+
+
+                  ],
+                ),
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                    onPressed: () {
+                      fetchAndDisplayUpdatedData();
+                    },
+                    style: ElevatedButton.styleFrom(
+                        primary: Color(0xFF201658),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20), // Adjust the value to change roundness
+                        ),
+                      side: BorderSide(color: Color(0xFF98ABEE), width: 1),
+                    ),
+                    child: Text('Check Entries')
+
+                ),
+                const SizedBox(width: 40,),
+                ElevatedButton(
+                    onPressed: () {
+                      clearEntries();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      primary: Color(0xFF201658),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20), // Adjust the value to change roundness
+                      ),
+                      side: BorderSide(color: Color(0xFF98ABEE), width: 1),
+                    ),
+                    child: Text('Clear Entries')
+
+                ),
+              ],
+            ),
+            SizedBox(height: 20),
+            if (updatedData.isNotEmpty)
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: DataTable(
+                  columns: <DataColumn>[
+                    for (var key in updatedData[0].keys)
+                      DataColumn(label: Text(key.toString())),
+                  ],
+                  rows: <DataRow>[
+                    for (var entry in updatedData)
+                      DataRow(
+                        cells: <DataCell>[
+                          for (var value in entry.values)
+                            DataCell(Text(value.toString())),
+                        ],
+                      ),
+                  ],
+                ),
+              ),
+
+
+
 
           ],
 
         ),
       ),
+      backgroundColor: Color(0xFF201658),
     );
   }
 }
@@ -207,8 +302,8 @@ Widget buildButton({
     ElevatedButton(
       style: ElevatedButton.styleFrom(
         minimumSize: Size.fromHeight(56),
-        primary: Colors.white,
-        onPrimary: Colors.black,
+        primary: Color(0xFF98ABEE),
+        onPrimary: Color(0xFFF9E8C9),
         textStyle: TextStyle(fontSize: 20),
       ),
       child: Row(
