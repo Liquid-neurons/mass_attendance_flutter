@@ -119,37 +119,9 @@ class _MyHomePageState extends State<VideoPage> {
     }
   }
 
-  Future<void> fetchAndDisplayUpdatedData() async {
-    var updatedDataResponse = await http.get(Uri.parse("http://49.206.252.212:5001/return_csv"));
 
-    if (updatedDataResponse.statusCode == 200) {
-      setState(() {
-        updatedData = jsonDecode(updatedDataResponse.body);
-      });
-    } else {
-      print("Failed to fetch updated data. Status Code: ${updatedDataResponse.statusCode}");
-    }
-  }
 
-  Future<void> clearEntries() async {
-    var clearEntriesResponse = await http.post(
-      Uri.parse("http://49.206.252.212:5001/clear_csv"),
-    );
 
-    if (clearEntriesResponse.statusCode == 200) {
-      print("CSV file cleared successfully.");
-      // Refresh the UI to reflect the changes (optional)
-      fetchAndDisplayUpdatedData();
-    } else {
-      print("Failed to clear CSV file. Status Code: ${clearEntriesResponse.statusCode}");
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    fetchAndDisplayUpdatedData();
-  }
 
 
 
@@ -227,12 +199,13 @@ class _MyHomePageState extends State<VideoPage> {
                 ),
               ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
+
                 ElevatedButton(
                     onPressed: () {
-                      fetchAndDisplayUpdatedData();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => Entries()),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                         primary: Color(0xFF201658),
@@ -244,53 +217,19 @@ class _MyHomePageState extends State<VideoPage> {
                     child: Text('Check Entries')
 
                 ),
-                const SizedBox(width: 40,),
-                ElevatedButton(
-                    onPressed: () {
-                      clearEntries();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      primary: Color(0xFF201658),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20), // Adjust the value to change roundness
-                      ),
-                      side: BorderSide(color: Color(0xFF98ABEE), width: 1),
-                    ),
-                    child: Text('Clear Entries')
-
-                ),
-              ],
-            ),
-            SizedBox(height: 20),
-            if (updatedData.isNotEmpty)
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: DataTable(
-                  columns: <DataColumn>[
-                    for (var key in updatedData[0].keys)
-                      DataColumn(label: Text(key.toString())),
-                  ],
-                  rows: <DataRow>[
-                    for (var entry in updatedData)
-                      DataRow(
-                        cells: <DataCell>[
-                          for (var value in entry.values)
-                            DataCell(Text(value.toString())),
-                        ],
-                      ),
-                  ],
-                ),
-              ),
+            SizedBox(height:20)
 
 
 
+            ]),
 
-          ],
+
+
 
         ),
-      ),
-      backgroundColor: Color(0xFF201658),
-    );
+        backgroundColor: Color(0xFF201658),
+      );
+
   }
 }
 

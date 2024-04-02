@@ -130,7 +130,9 @@ class _EntriesState extends State<Entries> {
                       DataRow(
                         cells: <DataCell>[
                           for (var value in entry.values)
-                            DataCell(Text(value.toString())),
+                            DataCell(Text(
+                                value.toString(),
+                              style: TextStyle(color: Color(0xFFF9E8C9)),)),
                         ],
                       ),
                   ],
@@ -138,14 +140,23 @@ class _EntriesState extends State<Entries> {
               ),
             SizedBox(height: 20,),
             ElevatedButton(
-              onPressed: () {
-                clearEntries();
-              },
-              child: Text('Clear Entries'),
+                onPressed: () {
+                  clearEntries();
+                },
+                style: ElevatedButton.styleFrom(
+                  primary: Color(0xFF201658),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20), // Adjust the value to change roundness
+                  ),
+                  side: BorderSide(color: Color(0xFF98ABEE), width: 1),
+                ),
+                child: Text('Clear Entries')
+
             ),
           ],
         ),
       ),
+      backgroundColor: Color(0xFF201658),
     );
   }
 }
