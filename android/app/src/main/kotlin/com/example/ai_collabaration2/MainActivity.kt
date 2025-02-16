@@ -1,4 +1,4 @@
-package com.example.ai_collabaration2
+package com.example.mas_dev
 
 import io.flutter.embedding.android.FlutterActivity
 

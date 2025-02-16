@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ai_collabaration2/main.dart';
+import 'package:mas_dev/main.dart';
 
 void main() {
   runApp(MyApp());

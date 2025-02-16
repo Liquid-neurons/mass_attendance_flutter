@@ -6,7 +6,10 @@ import 'package:gallery_saver/files.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:http/http.dart' as http;
-import 'package:ai_collabaration2/app.dart';
+import 'package:mas_dev/app.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:camera/camera.dart';
+import 'dart:async';
 
 
 
@@ -33,67 +36,72 @@ class _MyHomePageState extends State<VideoPage> {
   List<dynamic> updatedData = [];
 
 
-  // Future<void> uploadVideo(File videoFile) async {
+  // Future pickImage(ImageSource source) async {
   //   try {
-  //     // Save the video file to a local directory
-  //     String localPath = '/mas_video';
-  //     await videoFile.copy(localPath);
-  //     print('Video saved locally at: $localPath');
+  //     final image = await ImagePicker().pickImage(source: source);
+  //     if (image == null) return;
   //
-  //     // Encode the video file to base64
-  //     List<int> videoBytes = await videoFile.readAsBytes();
-  //     String base64Video = base64Encode(videoBytes);
-  //
-  //     // Prepare the JSON object
-  //     Map<String, dynamic> jsonBody = {
-  //       'video': base64Video,
-  //       'localPath': localPath,  // Include the local path in the JSON
-  //       // Add other parameters if needed
-  //     };
-  //
-  //     // Convert the JSON object to a string
-  //     String jsonString = jsonEncode(jsonBody);
-  //     print('jsonString: ${jsonString}');
-  //
-  //     // Uncomment the following lines when your API is ready
-  //     var url = Uri.parse('http://10.0.2.2:5000/upload');  // Update the endpoint URL
-  //     final response = await http.post(
-  //       url,
-  //       body: jsonString,
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //     );
-  //
-  //     if (response.statusCode == 200) {
-  //       print('Video uploaded successfully');
-  //     } else {
-  //       print('Failed to upload video. Status code: ${response.statusCode}');
-  //       print('Error message: ${response.body}');
-  //     }
-  //
-  //   } catch (e) {
-  //     print('Error uploading video: $e');
+  //     final imageTemporary = File(image.path);
+  //     setState(() => this.image = imageTemporary);
+  //     await GallerySaver.saveImage(image.path);
+  //     print('Image Path: ${image.path}');
+  //   }on PlatformException catch(e) {
+  //     print('Failed to pick image: $e');
   //   }
   // }
-  Future pickImage(ImageSource source) async {
-    try {
-      final image = await ImagePicker().pickImage(source: source);
-      if (image == null) return;
 
-      final imageTemporary = File(image.path);
-      setState(() => this.image = imageTemporary);
-      await GallerySaver.saveImage(image.path);
-      print('Image Path: ${image.path}');
-    }on PlatformException catch(e) {
-      print('Failed to pick image: $e');
-    }
+  void showSnackbar(String message, bool isSuccess) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              isSuccess ? Icons.check_circle : Icons.error,
+              color: isSuccess ? Colors.green : Colors.red,
+            ),
+            SizedBox(width: 8.0),
+            Text(message),
+          ],
+        ),
+        duration: Duration(seconds: 3),
+        backgroundColor: isSuccess ? Colors.green.withOpacity(0.9) : Colors.red.withOpacity(0.9),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.0),
+        ),
+      ),
+    );
   }
 
-  Future<void> uploadFile(File videoFile, String apiUrl) async {
+  void showSnackbar2(String message, bool isSuccess) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              isSuccess ? Icons.check_circle : Icons.error,
+              color: isSuccess ? Colors.green : Colors.red,
+            ),
+            SizedBox(width: 8.0),
+            Text(message),
+          ],
+        ),
+        duration: Duration(seconds: 3),
+        backgroundColor: isSuccess ? Colors.green.withOpacity(0.9) : Colors.red.withOpacity(0.9),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.0),
+        ),
+      ),
+    );
+  }
+
+
+
+  Future<Map<String, dynamic>> uploadVideo(File videoFile, String apiUrl) async {
     try {
       List<int> videoBytes = await videoFile.readAsBytes();
       String base64Video = base64Encode(videoBytes);
+
+      print("Base64 URL: data:video/mp4;base64,$base64Video");
 
       Map<String, String> headers = {
         "Content-Type": "application/json",
@@ -106,41 +114,154 @@ class _MyHomePageState extends State<VideoPage> {
       var response = await http.post(
         Uri.parse(apiUrl),
         headers: headers,
-        body: jsonEncode(body), // Set a longer timeout duration (in seconds)
-      );
+        body: jsonEncode(body), // Ensure the body is encoded to JSON
+      ).timeout(const Duration(minutes: 5)); // Set a longer timeout duration
+
+      print("API Response Status Code: ${response.statusCode}");
+      print("API Response Body: ${response.body}");
 
       if (response.statusCode == 200) {
         print("Video uploaded successfully");
+        showSnackbar('Video uploaded successfully', true);
+        return jsonDecode(response.body);
       } else {
+        showSnackbar('Failed to upload video', false);
         print("Failed to upload video. Status Code: ${response.statusCode}");
+        return {"success": false};
+
       }
     } catch (e) {
+      showSnackbar('Failed to upload video', false);
       print("Error uploading video: $e");
+      return {"success": false};
+    }
+  }
+
+  Future<Map<String, dynamic>> uploadPhoto(File videoFile, String apiUrl) async {
+    try {
+      List<int> videoBytes = await videoFile.readAsBytes();
+      String base64Video = base64Encode(videoBytes);
+
+      print("Base64 URL: data:video/mp4;base64,$base64Video");
+
+      Map<String, String> headers = {
+        "Content-Type": "application/json",
+      };
+
+      Map<String, String> body = {
+        "base64_photo": base64Video,
+      };
+
+      var response = await http.post(
+        Uri.parse(apiUrl),
+        headers: headers,
+        body: jsonEncode(body), // Ensure the body is encoded to JSON
+      ).timeout(const Duration(minutes: 5)); // Set a longer timeout duration
+
+      print("API Response Status Code: ${response.statusCode}");
+      print("API Response Body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        print("Photo uploaded successfully");
+        showSnackbar('Photo uploaded successfully', true);
+        return jsonDecode(response.body);
+      } else {
+        showSnackbar('Failed to upload image', false);
+        print("Failed to upload image. Status Code: ${response.statusCode}");
+        return {"success": false};
+
+      }
+    } catch (e) {
+      showSnackbar('Failed to upload photo', false);
+      print("Error uploading photo: $e");
+      return {"success": false};
     }
   }
 
 
 
-
-
-
-
-
-  Future pickVideo(ImageSource source) async {
+  Future<void> pickVideo(ImageSource source) async {
     try {
-      final video = await ImagePicker().pickVideo(source: source);
-      if (video == null) return;
+      final videoFile = await ImagePicker().pickVideo(source: source);
+      if (videoFile == null) return;
 
-      final videoTemporary = File(video.path);
-      setState(() => this.video = videoTemporary);
+      final videoTemporary = File(videoFile.path);
 
-      await uploadFile(videoTemporary, "http://49.206.252.212:5001/upload");
+      // If the video is taken from the camera, save it to the gallery
+      if (source == ImageSource.camera) {
+        final appDir = await getApplicationDocumentsDirectory();
 
-      print('Video Path: ${video.path}');
+        // Generate a timestamp for the video file name
+        final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+        final newVideoPath = '${appDir.path}/video_$timestamp.mp4';
+
+        // Copy the temporary video to the new path
+        await videoTemporary.copy(newVideoPath);
+
+        // Save the new video path to the gallery
+        await GallerySaver.saveVideo(newVideoPath);
+      }
+
+      // Optionally, you can set the state with the picked video
+      setState(() {
+        this.video = videoTemporary; // Store the picked video in the state
+      });
+
+      // Assume uploadVideo is a function you defined elsewhere
+      final response = await uploadVideo(videoTemporary, "http://49.206.252.212:35001/upload-video");
+      if (response != null && response['success'] == true) {
+        showSnackbar2('Processed successfully.', true);
+        final List<dynamic> markedData = response['marked_data'];
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => Entries(markedData: markedData),
+          ),
+        );
+      } else {
+        showSnackbar2('Failed to process video data.', false);
+        print('Failed to process video data.');
+      }
+
     } on PlatformException catch (e) {
       print('Failed to pick video: $e');
     }
   }
+
+
+
+
+
+
+
+
+
+  Future pickImage(ImageSource source) async {
+    try {
+      final image = await ImagePicker().pickImage(source: source);
+      if (image == null) return;
+
+      final imageTemporary = File(image.path);
+
+      final response = await uploadPhoto(imageTemporary, "http://49.206.252.212:35001/upload-photo");
+      if (response != null && response['success'] == true) {
+        showSnackbar2('Processed successfully.', true);
+        final List<dynamic> markedData = response['marked_data'];
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => Entries(markedData: markedData),
+          ),
+        );
+      } else {
+        showSnackbar2('Failed to process image data.', false);
+        print('Failed to process image data.');
+      }
+    } on PlatformException catch (e) {
+      print('Failed to pick image: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -156,7 +277,7 @@ class _MyHomePageState extends State<VideoPage> {
 
 
                   Text(
-                    'Upload Video',
+                    'Upload Document',
                     style: TextStyle(
                         color: Color(0xFF98ABEE), // Changed text color
                         fontSize: 24.0,
@@ -164,7 +285,7 @@ class _MyHomePageState extends State<VideoPage> {
                     ),
                   ),
                   Text(
-                    'Provide a video of the class under visible lighting to mark the attendance.',
+                    'Provide a video or photo of the class under visible lighting to mark the attendance.',
                     style: TextStyle(
                         color: Color(0xFFF9E8C9), // Changed text color
                         fontSize: 18.0,
@@ -193,6 +314,18 @@ class _MyHomePageState extends State<VideoPage> {
                       icon: Icons.camera_alt_outlined,
                       onClicked: ()=>pickVideo(ImageSource.camera),
                     ),
+                    const SizedBox(height:24),
+                    buildButton(
+                      title: 'Upload Photo',
+                      icon: Icons.image_outlined,
+                        onClicked: () => pickImage(ImageSource.gallery),
+                    ),
+                    const SizedBox(height:24),
+                    buildButton(
+                      title: 'Take Photo',
+                      icon: Icons.camera_alt_outlined,
+                      onClicked: ()=>pickImage(ImageSource.camera),
+                    ),
 
 
                   ],
@@ -200,23 +333,23 @@ class _MyHomePageState extends State<VideoPage> {
               ),
             ),
 
-                ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => Entries()),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                        primary: Color(0xFF201658),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20), // Adjust the value to change roundness
-                        ),
-                      side: BorderSide(color: Color(0xFF98ABEE), width: 1),
-                    ),
-                    child: Text('Check Entries')
-
-                ),
+                // ElevatedButton(
+                //     onPressed: () {
+                //       Navigator.push(
+                //         context,
+                //         MaterialPageRoute(builder: (context) => Entries()),
+                //       );
+                //     },
+                //     style: ElevatedButton.styleFrom(
+                //         primary: Color(0xFF201658),
+                //         shape: RoundedRectangleBorder(
+                //           borderRadius: BorderRadius.circular(20), // Adjust the value to change roundness
+                //         ),
+                //       side: BorderSide(color: Color(0xFF98ABEE), width: 1),
+                //     ),
+                //     child: Text('Check Entries')
+                //
+                // ),
             SizedBox(height:20)
 
 
